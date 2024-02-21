@@ -46,9 +46,9 @@ for LANG in "${LANGS[@]}"
     echo "${GREEN}[INFO]    Source language="$SOURCE_LANG${RESET}
     if [ $LANG = "FR" ]; then
         echo "${GREEN}[INFO]    Applying formal tone in French${RESET}"
-        curl -X POST 'https://api.deepl.com/v2/document' --header 'Authorization: DeepL-Auth-Key '$AUTH_KEY --form 'target_lang='${LANG} --form 'file=@'$FILENAME'.docx' --form 'formality=prefer_more' --form 'glossary_id='$GLOSSARY_ID  --output response.json
+        curl -X POST 'https://api.deepl.com/v2/document' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY --form 'target_lang='${LANG} --form 'file=@'$FILENAME'.docx' --form 'formality=prefer_more' --form 'glossary_id='$GLOSSARY_ID  --output response.json
     else
-        curl -X POST 'https://api.deepl.com/v2/document' --header 'Authorization: DeepL-Auth-Key '$AUTH_KEY --form 'target_lang='${LANG} --form 'file=@'$FILENAME'.docx' --form 'formality=prefer_less' --form 'glossary_id='$GLOSSARY_ID --form 'source_lang='${SOURCE_LANG} --output response.json 
+        curl -X POST 'https://api.deepl.com/v2/document' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY --form 'target_lang='${LANG} --form 'file=@'$FILENAME'.docx' --form 'formality=prefer_less' --form 'glossary_id='$GLOSSARY_ID --form 'source_lang='${SOURCE_LANG} --output response.json 
     fi
 
     JSON="cat response.json"
@@ -61,7 +61,7 @@ for LANG in "${LANGS[@]}"
     echo "[INFO]    Checking status${RESET}"
 
     curl -X POST 'https://api.deepl.com/v2/document/'$DOCUMENT_ID \
-    --header 'Authorization: DeepL-Auth-Key '$AUTH_KEY \
+    --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY \
     --header 'Content-Type: application/json' \
     --data '{
     "document_key": "'$DOCUMENT_KEY'"
@@ -70,7 +70,7 @@ for LANG in "${LANGS[@]}"
     echo -e "\n${GREEN}[INFO]    Waiting for 10s${RESET}"
     sleep 10
 
-    curl -X POST 'https://api.deepl.com/v2/document/'$DOCUMENT_ID'/result' --header 'Authorization: DeepL-Auth-Key '$AUTH_KEY --header 'Content-Type: application/json' \
+    curl -X POST 'https://api.deepl.com/v2/document/'$DOCUMENT_ID'/result' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY --header 'Content-Type: application/json' \
     --data '{
     "document_key": "'$DOCUMENT_KEY'"
     }' > $FILENAME-$LANG.docx
@@ -130,7 +130,7 @@ echo "  1) CS > SK"
 echo "  2) EN > All except CS, SK"
 echo "  3) EN > All including SK, exc. CS"
 echo "  4) EN > CS"
-echo "  5) EN > ES"
+echo "  5) CS > EN"
 read n
 case $n in
         1) 
@@ -140,7 +140,10 @@ case $n in
         2) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "nb");;
         3) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "nb" "sk");;
         4) declare -a  LANGS=("cs");;
-        5) declare -a  LANGS=("es");;
+        5) 
+          declare -a  LANGS=("en")
+          SOURCE_LANG="cs"
+          ;;
         *) echo "invalid option";;
 esac
 

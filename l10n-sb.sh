@@ -138,15 +138,20 @@ echo "  1) CS > SK"
 echo "  2) EN > All except CZ, SK"
 echo "  3) EN > All including SK, exc CZ"
 echo "  4) EN > CS"
+echo "  5) CS > EN"
 read n
 case $n in
   1) 
-  declare -a LANGS=("sk")
-  SOURCE_LANG="cs"
+    declare -a LANGS=("sk")
+    SOURCE_LANG="cs"
   ;;
   2) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "hu" "nb");;
   3) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "hu" "nb" "sk");;
   4) declare -a  LANGS=("cs");;
+  5) 
+    declare -a  LANGS=("en")
+    SOURCE_LANG="cs"
+  ;;
   *) echo "invalid option";;
 esac
 
