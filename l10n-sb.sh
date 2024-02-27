@@ -63,19 +63,47 @@ runCommand() {
       else
         echo "${GREEN}[INFO]    Glossary id is "$GLOSSARY_ID${RESET}
       fi
-        
+
+      if [ $LANG = "fr" ]; then
+        for name in "${OLD_TEXTS[@]}"; do
+          curl -X POST 'https://api.deepl.com/v2/translate' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY \
+          --data-urlencode text="$name" \
+          --data-urlencode 'target_lang='${LANG} \
+          --data-urlencode 'source_lang='${SOURCE_LANG} \
+          --data-urlencode 'formality=prefer_more' \
+          --data-urlencode 'glossary_id: '$GLOSSARY_ID \
+          > temp.json
+          new_value=$(jq -r '.[] | .[] | .text' temp.json)
+          echo $new_value
+          new_texts+=( "${new_value}" )
+        done
+      else
+        for name in "${OLD_TEXTS[@]}"; do
+          curl -X POST 'https://api.deepl.com/v2/translate' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY \
+          --data-urlencode text="$name" \
+          --data-urlencode 'target_lang='${LANG} \
+          --data-urlencode 'source_lang='${SOURCE_LANG} \
+          --data-urlencode 'formality=prefer_less' \
+          --data-urlencode 'glossary_id: '$GLOSSARY_ID \
+          > temp.json
+          new_value=$(jq -r '.[] | .[] | .text' temp.json)
+          echo $new_value
+          new_texts+=( "${new_value}" )
+        done
+      fi
+
       for name in "${OLD_TEXTS[@]}"; do
         curl -X POST 'https://api.deepl.com/v2/translate' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY \
         --data-urlencode text="$name" \
         --data-urlencode 'target_lang='${LANG} \
         --data-urlencode 'source_lang='${SOURCE_LANG} \
-        --data-urlencode 'formality=prefer_more' \
+        --data-urlencode 'formality=prefer_less' \
         --data-urlencode 'glossary_id: '$GLOSSARY_ID \
         > temp.json
         new_value=$(jq -r '.[] | .[] | .text' temp.json)
         echo $new_value
         new_texts+=( "${new_value}" )
-    done
+      done
 
     update_command=( xmlstarlet ed )
     for idx in ${!new_texts[@]}; do
@@ -137,7 +165,7 @@ fi
 echo "  1) CS > SK"
 echo "  2) EN > All except CZ, SK"
 echo "  3) EN > All including SK, exc CZ"
-echo "  4) EN > CS"
+echo "  4) EN > FR"
 echo "  5) CS > EN"
 read n
 case $n in
@@ -147,7 +175,7 @@ case $n in
   ;;
   2) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "hu" "nb");;
   3) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "hu" "nb" "sk");;
-  4) declare -a  LANGS=("cs");;
+  4) declare -a  LANGS=("fr");;
   5) 
     declare -a  LANGS=("en")
     SOURCE_LANG="cs"

@@ -44,9 +44,9 @@ for LANG in "${LANGS[@]}"
     echo "${GREEN}[INFO]    Glossary id="$GLOSSARY_ID${RESET}
     echo "${GREEN}[INFO]    Target language="$LANG${RESET}
     echo "${GREEN}[INFO]    Source language="$SOURCE_LANG${RESET}
-    if [ $LANG = "FR" ]; then
+    if [ $LANG = "fr" ]; then
         echo "${GREEN}[INFO]    Applying formal tone in French${RESET}"
-        curl -X POST 'https://api.deepl.com/v2/document' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY --form 'target_lang='${LANG} --form 'file=@'$FILENAME'.docx' --form 'formality=prefer_more' --form 'glossary_id='$GLOSSARY_ID  --output response.json
+        curl -X POST 'https://api.deepl.com/v2/document' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY --form 'target_lang='${LANG} --form 'file=@'$FILENAME'.docx' --form 'formality=prefer_more' --form 'glossary_id='$GLOSSARY_ID --form 'source_lang='${SOURCE_LANG} --output response.json
     else
         curl -X POST 'https://api.deepl.com/v2/document' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY --form 'target_lang='${LANG} --form 'file=@'$FILENAME'.docx' --form 'formality=prefer_less' --form 'glossary_id='$GLOSSARY_ID --form 'source_lang='${SOURCE_LANG} --output response.json 
     fi
@@ -129,7 +129,7 @@ declare -a LANGS=("")
 echo "  1) CS > SK"
 echo "  2) EN > All except CS, SK"
 echo "  3) EN > All including SK, exc. CS"
-echo "  4) EN > CS"
+echo "  4) EN > FR"
 echo "  5) CS > EN"
 read n
 case $n in
@@ -139,7 +139,7 @@ case $n in
           ;;
         2) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "nb");;
         3) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "nb" "sk");;
-        4) declare -a  LANGS=("cs");;
+        4) declare -a  LANGS=("fr");;
         5) 
           declare -a  LANGS=("en")
           SOURCE_LANG="cs"
