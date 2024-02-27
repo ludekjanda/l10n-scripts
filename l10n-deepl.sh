@@ -34,7 +34,17 @@ help() {
 
 runCommand() {
 
-cp $HOME/bin/glossaries.json .
+  echo "${GREEN}[INFO]    getting a list of glossaries from DeepL${RESET}"
+
+  curl -X GET 'https://api.deepl.com/v2/glossaries' \
+  --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY > glossaries.json
+
+
+  cp   glossaries.json      glossaries.json.tmp &&
+  jq . glossaries.json.tmp >glossaries.json     &&
+  rm   glossaries.json.tmp
+
+  cat glossaries.json
 
 
 for LANG in "${LANGS[@]}"

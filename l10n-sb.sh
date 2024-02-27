@@ -33,7 +33,17 @@ help() {
 
 runCommand() {
 
-  cp $HOME/bin/glossaries.json .
+  echo "${GREEN}[INFO]    getting a list of glossaries from DeepL${RESET}"
+
+  curl -X GET 'https://api.deepl.com/v2/glossaries' \
+  --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY > glossaries.json
+
+
+  cp   glossaries.json      glossaries.json.tmp &&
+  jq . glossaries.json.tmp >glossaries.json     &&
+  rm   glossaries.json.tmp
+
+  cat glossaries.json
 
   curl -X GET 'https://mapi.storyblok.com/v1/spaces/'${SPACE_ID}'/stories/'${STORY_ID}'/export.xml?lang_code='${SOURCE_LANG}'&export_lang=true' --header 'Authorization: '$SB_AUTH_KEY'' > "$FILENAME"
 
@@ -103,6 +113,7 @@ runCommand() {
         new_value=$(jq -r '.[] | .[] | .text' temp.json)
         echo $new_value
         new_texts+=( "${new_value}" )
+        rm temp.json
       done
 
     update_command=( xmlstarlet ed )
@@ -121,9 +132,11 @@ runCommand() {
     XML=$(jq -Rs '{ "data": . }' <blog-${LANG}.xml)
     echo ${XML}
     curl -X PUT "https://mapi.storyblok.com/v1/spaces/${SPACE_ID}/stories/${STORY_ID}/import.xml?lang_code=${LANG}" -H "Authorization: $SB_AUTH_KEY" --header "Content-Type: application/json" --data "${XML}"
+    rm blog-${LANG}.xml
   done
 
   rm glossaries.json
+  rm $[FILENAME]
 
 }
 
