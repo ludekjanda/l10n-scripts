@@ -58,10 +58,11 @@ runCommand() {
   while read line 
   do
     OLD_TEXTS[$i]="$line"
-    echo "[INFO]    Hodnota:" $line
+    echo "${GREEN}[INFO]    Hodnota:" $line
     i=$((i+1))
 
   done < temp.txt
+  echo "${RESET}"
   rm temp.txt
 
   for LANG in "${LANGS[@]}"
@@ -76,20 +77,22 @@ runCommand() {
 
       if [ $LANG = "fr" ]; then
         for name in "${OLD_TEXTS[@]}"; do
-          curl -X POST 'https://api.deepl.com/v2/translate' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY \
+          curl -s -X POST 'https://api.deepl.com/v2/translate' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY \
           --data-urlencode text="$name" \
           --data-urlencode 'target_lang='${LANG} \
           --data-urlencode 'source_lang='${SOURCE_LANG} \
           --data-urlencode 'formality=prefer_more' \
           --data-urlencode 'glossary_id: '$GLOSSARY_ID \
           > temp.json
+          echo "${GREEN}[INFO]    French needs to be more formal${RESET}"
           new_value=$(jq -r '.[] | .[] | .text' temp.json)
           echo $new_value
           new_texts+=( "${new_value}" )
+          rm temp.json
         done
       else
         for name in "${OLD_TEXTS[@]}"; do
-          curl -X POST 'https://api.deepl.com/v2/translate' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY \
+          curl -s -X POST 'https://api.deepl.com/v2/translate' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY \
           --data-urlencode text="$name" \
           --data-urlencode 'target_lang='${LANG} \
           --data-urlencode 'source_lang='${SOURCE_LANG} \
@@ -99,22 +102,10 @@ runCommand() {
           new_value=$(jq -r '.[] | .[] | .text' temp.json)
           echo $new_value
           new_texts+=( "${new_value}" )
+          rm temp.json
         done
       fi
 
-      for name in "${OLD_TEXTS[@]}"; do
-        curl -X POST 'https://api.deepl.com/v2/translate' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY \
-        --data-urlencode text="$name" \
-        --data-urlencode 'target_lang='${LANG} \
-        --data-urlencode 'source_lang='${SOURCE_LANG} \
-        --data-urlencode 'formality=prefer_less' \
-        --data-urlencode 'glossary_id: '$GLOSSARY_ID \
-        > temp.json
-        new_value=$(jq -r '.[] | .[] | .text' temp.json)
-        echo $new_value
-        new_texts+=( "${new_value}" )
-        rm temp.json
-      done
 
     update_command=( xmlstarlet ed )
     for idx in ${!new_texts[@]}; do
@@ -122,21 +113,21 @@ runCommand() {
         -u "//tag[$((idx + 1))]/text" # XPath uses 1-indexed values
         -v "${new_texts["$idx"]}"           # ...whereas bash arrays are 0-indexed
       )
-      echo $idx
-      echo ${new_texts[$idx]}
+      #echo $idx
+      #echo ${new_texts[$idx]}
 
     done
 
     tempfile=$(mktemp "$FILENAME.XXXXXX")
     "${update_command[@]}" <"$FILENAME" >"$tempfile" && mv "$tempfile" blog-${LANG}.xml
     XML=$(jq -Rs '{ "data": . }' <blog-${LANG}.xml)
-    echo ${XML}
-    curl -X PUT "https://mapi.storyblok.com/v1/spaces/${SPACE_ID}/stories/${STORY_ID}/import.xml?lang_code=${LANG}" -H "Authorization: $SB_AUTH_KEY" --header "Content-Type: application/json" --data "${XML}"
+    echo ${XML} | jq .
+    curl -s -X PUT "https://mapi.storyblok.com/v1/spaces/${SPACE_ID}/stories/${STORY_ID}/import.xml?lang_code=${LANG}" -H "Authorization: $SB_AUTH_KEY" --header "Content-Type: application/json" --data "${XML}"
     rm blog-${LANG}.xml
   done
 
   rm glossaries.json
-  rm $[FILENAME]
+  rm ${FILENAME}
 
 }
 
@@ -174,8 +165,8 @@ if [[ -z $STORY_ID ]]; then
 fi
 
 
-
-echo "  1) CS > SK"
+echo "Machine translate to: "
+echo "  1) CZ > SK"
 echo "  2) EN > All except CZ, SK"
 echo "  3) EN > All including SK, exc CZ"
 echo "  4) EN > FR"
