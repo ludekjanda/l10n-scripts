@@ -54,14 +54,17 @@ for LANG in "${LANGS[@]}"
     echo "${GREEN}[INFO]    Glossary id="$GLOSSARY_ID${RESET}
     echo "${GREEN}[INFO]    Target language="$LANG${RESET}
     echo "${GREEN}[INFO]    Source language="$SOURCE_LANG${RESET}
-    if [ $SOURCE_LANG="cs" ]; then
+    if [ $SOURCE_LANG == "cs" ]; then
       echo "[INFO]    Source language "$SOURCE_LANG" does not support glossaries"
       curl -X POST 'https://api.deepl.com/v2/document' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY --form 'target_lang='${LANG} --form 'file=@'$FILENAME'.'$EXTENSION --form 'formality=prefer_less' --form 'source_lang='${SOURCE_LANG} --output response.json 
-    elif [ $LANG = "fr" ]; then
+    else
+      if [ $LANG == "fr" ]; then
         echo "${GREEN}[INFO]    Applying formal tone in French${RESET}"
         curl -X POST 'https://api.deepl.com/v2/document' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY --form 'target_lang='${LANG} --form 'file=@'$FILENAME'.'$EXTENSION --form 'formality=prefer_more' --form 'glossary_id='$GLOSSARY_ID --form 'source_lang='${SOURCE_LANG} --output response.json
-    else
+      else
+              echo "[INFO]    We are here"
         curl -X POST 'https://api.deepl.com/v2/document' --header 'Authorization: DeepL-Auth-Key '$DEEPL_AUTH_KEY --form 'target_lang='${LANG} --form 'file=@'$FILENAME'.'$EXTENSION --form 'formality=prefer_less' --form 'glossary_id='$GLOSSARY_ID --form 'source_lang='${SOURCE_LANG} --output response.json 
+      fi
     fi
 
     JSON="cat response.json"
@@ -150,9 +153,15 @@ case $n in
           declare -a LANGS=("sk")
           SOURCE_LANG="cs"
           ;;
-        2) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "nb");;
-        3) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "nb" "sk");;
-        4) declare -a  LANGS=("sk");;
+        2) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "nb")
+          SOURCE_LANG="en"
+          ;;
+        3) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "nb" "sk")
+          SOURCE_LANG="en"
+          ;;
+        4) declare -a  LANGS=("sk")
+          SOURCE_LANG="en"
+          ;;
         5) 
           declare -a  LANGS=("pl")
           SOURCE_LANG="cs"
