@@ -177,8 +177,8 @@ case $n in
     declare -a LANGS=("sk")
     SOURCE_LANG="cs"
   ;;
-  2) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "hu" "nb");;
-  3) declare -a  LANGS=("es" "pt-br" "it" "nl" "hu" "fr" "pl" "hu" "nb" "sk");;
+  2) declare -a  LANGS=("da" "es" "fi" "pt-br" "it" "nl" "hu" "fr" "pl" "hu" "nb" "sv");;
+  3) declare -a  LANGS=("da" "es" "fi" "pt-br" "it" "nl" "hu" "fr" "pl" "hu" "nb" "sk" "sv");;
   4) declare -a  LANGS=("fr");;
   5) 
     declare -a  LANGS=("en")
