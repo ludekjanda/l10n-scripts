@@ -4,7 +4,7 @@
 RESET=$(tput sgr0)
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
-SPACE_ID=""
+SPACE_ID="97382"
 SOURCE_LANG="en"
 unset $STORY_ID
 
@@ -45,8 +45,13 @@ done
 #Check if the file exists
 echo "${GREEN}[INFO]   The file filenames.tsv was generated.${RESET} "
 
-cat filenames.tsv
+echo "${GREEN}[INFO]   Converting pt to pt-br language codes to fit Storyblok standard${RESET} "
 
+sed -e "s|\tpt\t|\tpt-br\t|g" filenames.tsv > filenames_fixed.tsv
+rm filenames.tsv
+mv filenames_fixed.tsv filenames.tsv
+
+cat filenames.tsv
 
 read -p "Continue (y/n)?" CHOICE
 case "$CHOICE" in 
@@ -63,13 +68,20 @@ case "$CHOICE" in
   ;;
 esac
 
+
+
+
+
 echo "${GREEN}[INFO]   Parsing... ${RESET}"
+
+
 
 while read -r FILENAME LANGUAGE_CODE STORY_ID ; do 
     echo "filename=$FILENAME language=$LANGUAGE_CODE story=$STORY_ID " 
     JSON=$(jq -Rs '{ "data": . }' < $FILENAME)
 echo $JSON 
-echo "${GREEN}[TBD]   Check variables (da es fi pt-br it nl hu fr pl hu nb sk sv)${RESET} "
+
+
 echo -e "\n"
 echo "${GREEN}[INFO]   File $FILENAME into $LANGUAGE_CODE...${RESET}"
 echo -e "\n\n"
